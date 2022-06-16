@@ -1,0 +1,5 @@
+E:\Dev\Libraries\Roseworks\Roseworks\obj\Debug\netcoreapp3.1\Roseworks.csproj.AssemblyReference.cache
+E:\Dev\Libraries\Roseworks\Roseworks\obj\Debug\netcoreapp3.1\Roseworks.GeneratedMSBuildEditorConfig.editorconfig
+E:\Dev\Libraries\Roseworks\Roseworks\obj\Debug\netcoreapp3.1\Roseworks.AssemblyInfoInputs.cache
+E:\Dev\Libraries\Roseworks\Roseworks\obj\Debug\netcoreapp3.1\Roseworks.AssemblyInfo.cs
+E:\Dev\Libraries\Roseworks\Roseworks\obj\Debug\netcoreapp3.1\Roseworks.csproj.CoreCompileInputs.cache
