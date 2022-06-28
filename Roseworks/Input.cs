@@ -1,7 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Collections.Generic;
-using Roseworks;
-using RoseLog;
 
 #pragma warning disable 0414
 namespace Roseworks
@@ -153,17 +151,17 @@ namespace Roseworks
 					bool shouldFire = ((StartEndRefs[refIndex].SlotFlags & (1 << fireSlot)) != 0);
 					if (shouldFire)
 					{
-						if (DebugPrint) Log.AppendLineAndWrite("InputHandler.HandleFire()");
+						if (DebugPrint) Logger.WriteLine("InputHandler.HandleFire()");
 						if (value != 0)
 							StartEndRefs[refIndex].StartInput(comID, fireSlot, value);
 						else
 							StartEndRefs[refIndex].EndInput(comID, fireSlot);
 					}
 					if (DebugPrint)
-						Log.AppendLineAndWrite(
+						Logger.WriteLine(
 							System.Reflection.MethodBase.GetCurrentMethod().Name + " " +
 							fireSlot + " " + (value != 0 ? "down" : "up") + " " + value);
-					if (DebugPrint) Log.AppendLineAndWrite("InputHandler.HandleFire( " + fireSlot + " " + (value!=0?"down":"up") + " " + value + " )");
+					if (DebugPrint) Logger.WriteLine("InputHandler.HandleFire( " + fireSlot + " " + (value!=0?"down":"up") + " " + value + " )");
 				}
 			}
 		}

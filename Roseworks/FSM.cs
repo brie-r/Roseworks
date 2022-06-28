@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using RelaStructures;
-using RoseLog;
 
 namespace Roseworks
 {
@@ -84,7 +83,7 @@ namespace Roseworks
 		// TODO: switch to to transition instead?
 		public static void ChangeState(float time, int stateID, int to, int timerID = -1, bool ignoreSame = false)
 		{
-			Log.Text.Clear();
+			Logger.Builder.Clear();
 			ref SState state = ref States.AtId(stateID);
 
 			if (Equals(state.State, to) && ignoreSame == true)
@@ -98,19 +97,19 @@ namespace Roseworks
 			// if changestate runs again during this, exit
 			if (ExitChangeState == true)
 			{
-				if (DebugPrint) Log.AppendLineAndWrite("Exiting ChangeState early. State was changed by callback");
+				if (DebugPrint) Logger.Builder.AppendLine("Exiting ChangeState early. State was changed by callback");
 				return;
 			};
-			Log.AppendLineAndWrite(typeof(int).FullName + ": " + state.State + " -> " + to);
-			Log.Text.Replace("FSM", "");
-			Log.Text.Replace("+", ".");
+			Logger.Builder.AppendLine(typeof(int).FullName + ": " + state.State + " -> " + to);
+			Logger.Builder.Replace("FSM", "");
+			Logger.Builder.Replace("+", ".");
 
 			if (state.State == to && timerID >= 0)
 			{
-				Log.AppendAndWrite("Loop timer " + timerID + ": " + DFormatTime(Timer.EndTime(timerID)) + " -> ");
+				Logger.Builder.Append("Loop timer " + timerID + ": " + DFormatTime(Timer.EndTime(timerID)) + " -> ");
 
 				Timer.Loop(timerID);
-				Log.AppendAndWrite(DFormatTime(Timer.EndTime(timerID)) + ". ");
+				Logger.Builder.Append(DFormatTime(Timer.EndTime(timerID)) + ". ");
 				Timer.CancelByComID(comID: state.ComID, ignoreID: timerID);
 			}
 			else
@@ -139,9 +138,10 @@ namespace Roseworks
 				}
 			}
 
-			if (DebugPrint && Log.Text.Length > 0)
-				Log.AppendLineAndWrite(Log.Text.ToString());
-			Log.Text.Clear(); state.State = to;
+			if (DebugPrint && Logger.Builder.Length > 0)
+				Logger.WriteLine(Logger.Builder.ToString());
+			Logger.Builder.Clear(); 
+			state.State = to;
 			ExitChangeState = true;
 		}
 		public static string DFormatTime(float t)
