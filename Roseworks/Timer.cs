@@ -1,15 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using log4net;
+using RoseLog;
+
 namespace Roseworks
 {
 	public static class Timer
 	{
-		private static readonly ILog Log = LogManager.GetLogger(typeof(ECS));
 		static bool DebugPrint = true;
 
-		private static StringBuilder sb = new StringBuilder();
 		static System.Diagnostics.StackTrace s = new System.Diagnostics.StackTrace();
 		public static float CurrentTime = 0;
 		public struct STimer
@@ -90,8 +89,8 @@ namespace Roseworks
 						i = Timers.Count;
 					else
 					{
-						sb.Append(DFormatTime(time) + "\tTimer ended: " + Timers.IndicesToIds[i] + " entID: " + timer.ComID);
-						sb.Append((timer.Callback == null ? "\tNo callback invoked" : ("\tCallback invoked: " + timer.Callback.Method)));
+						Log.AppendAndWrite(DFormatTime(time) + "\tTimer ended: " + Timers.IndicesToIds[i] + " entID: " + timer.ComID);
+						Log.AppendAndWrite((timer.Callback == null ? "\tNo callback invoked" : ("\tCallback invoked: " + timer.Callback.Method)));
 						DPrintClear();
 						if (timer.AutoCancel == true)
 							Timers.ReturnIndex(i);
@@ -104,14 +103,14 @@ namespace Roseworks
 		{
 			outTimerID = Timers.Request();
 			Timers.AtId(outTimerID).Setup(ref timer, time);
-			sb.Append("Timer added: id " + outTimerID + ", entID " + timer.ComID + ", time " + DFormatTime(timer.StartTime) + " - " + DFormatTime(timer.StartTime + timer.Duration));
+			Log.AppendAndWrite("Timer added: id " + outTimerID + ", entID " + timer.ComID + ", time " + DFormatTime(timer.StartTime) + " - " + DFormatTime(timer.StartTime + timer.Duration));
 			DPrintClear();
 		}
 		public static void Add(float time, out int outTimerID, int comID, float duration, float startTime = -1, System.Action<int> callback = null, bool autoCancel = true)
 		{
 			outTimerID = Timers.Request();
 			Timers.AtId(outTimerID).Setup(time, comID, duration, startTime: startTime, callback: callback, autoCancel: autoCancel);
-			sb.Append("Timer added: id " + outTimerID + ", entID " + comID + ", " + DFormatTime(startTime) + " - " + DFormatTime(startTime+duration));
+			Log.AppendAndWrite("Timer added: id " + outTimerID + ", entID " + comID + ", " + DFormatTime(startTime) + " - " + DFormatTime(startTime+duration));
 			DPrintClear();
 		}
 		public static void Add(int[] outTimerIDs, STimer[] timers, float time)
@@ -121,7 +120,7 @@ namespace Roseworks
 			{
 				outTimerIDs[i] = Timers.Request();
 				Timers.AtId(outTimerIDs[i]).Setup(ref timers[i], time);
-				sb.AppendLine("Timer added: id " + outTimerIDs[i] + ", entID " + timers[i].ComID + ", " + DFormatTime(timers[i].StartTime) + " - " + DFormatTime(timers[i].StartTime + timers[i].Duration));
+				Log.AppendLineAndWrite("Timer added: id " + outTimerIDs[i] + ", entID " + timers[i].ComID + ", " + DFormatTime(timers[i].StartTime) + " - " + DFormatTime(timers[i].StartTime + timers[i].Duration));
 				DPrintClear();
 			}
 		}
@@ -138,7 +137,7 @@ namespace Roseworks
 					autoCancel.SetAll(true);
 				}
 				Timers.AtId(outTimerIDs[i]).Setup(time, comID[i], duration[i], startTime: startTime[i], callback: callback[i], autoCancel: autoCancel[i]);
-				sb.AppendLine("Timer added: id " + outTimerIDs[i] + ", entID " + comID[i] + ", " + DFormatTime(startTime[i]) + " - " + DFormatTime(startTime[i] + duration[i]));
+				Log.AppendLineAndWrite("Timer added: id " + outTimerIDs[i] + ", entID " + comID[i] + ", " + DFormatTime(startTime[i]) + " - " + DFormatTime(startTime[i] + duration[i]));
 				DPrintClear();
 			}
 		}
@@ -158,18 +157,18 @@ namespace Roseworks
 					autoCancel.SetAll(true);
 				}
 				Timers.AtId(timerIDs[i]).Setup(time, comID[i], duration[i], startTime: startTime[i], callback: callback[i], autoCancel: autoCancel[i]);
-				sb.AppendLine("Timer added: id " + timerIDs[i] + ", entID " + comID[i] + ", " + DFormatTime((float)startTime[i]) + " - " + DFormatTime((float)startTime[i] + duration[i]));
+				Log.AppendLineAndWrite("Timer added: id " + timerIDs[i] + ", entID " + comID[i] + ", " + DFormatTime((float)startTime[i]) + " - " + DFormatTime((float)startTime[i] + duration[i]));
 				DPrintClear();
 			}
 			return timerIDs;
 		}
 		public static void CancelByComID(int comID, int ignoreID = -1)
 		{
-			sb.AppendLine("\tCancel timers by comID: " + comID + ", ignore timerID " + ignoreID);
+			Log.AppendLineAndWrite("\tCancel timers by comID: " + comID + ", ignore timerID " + ignoreID);
 			for (int i = Timers.Count - 1; i >= 0; i--)
 			{
-				sb.Append("Cancel " + Timers.IndicesToIds[i] + "? ");
-				sb.Append((Timers[i].ComID == comID) + " + " + (Timers.IndicesToIds[i] != ignoreID) + "\t");
+				Log.AppendAndWrite("Cancel " + Timers.IndicesToIds[i] + "? ");
+				Log.AppendAndWrite((Timers[i].ComID == comID) + " + " + (Timers.IndicesToIds[i] != ignoreID) + "\t");
 				if (Timers[i].ComID == comID && Timers.IndicesToIds[i] != ignoreID)
 					Timers.ReturnIndex(i);
 			}
@@ -241,9 +240,9 @@ namespace Roseworks
 		// debug print helper: prints, then clears string builder
 		public static void DPrintClear()
 		{
-			if (DebugPrint && sb.Length > 0)
-				Log.Info(sb);
-			sb.Clear();
+			if (DebugPrint && Log.Text.Length > 0)
+				Log.AppendLineAndWrite(Log.Text.ToString());
+			Log.Text.Clear();
 		}
 		// debug print helper: adds @, rounds to 2 decimals on floats
 		public static string DFormatTime(float time)
@@ -255,7 +254,7 @@ namespace Roseworks
 		{
 			if (timerID < 0)
 			{
-				sb.AppendLine(s.GetFrame(1).GetMethod().Name + " Timer with id " + timerID + " not found.");
+				Log.AppendLineAndWrite(s.GetFrame(1).GetMethod().Name + " Timer with id " + timerID + " not found.");
 				DPrintClear();
 				return false;
 			}
@@ -266,7 +265,7 @@ namespace Roseworks
 		{
 			if (timerIndex < 0 || timerIndex >= Timers.Length)
 			{
-				sb.AppendLine(s.GetFrame(1).GetMethod().Name + " Timer with index " + timerIndex + " not found.");
+				Log.AppendLineAndWrite(s.GetFrame(1).GetMethod().Name + " Timer with index " + timerIndex + " not found.");
 				DPrintClear();
 				return false;
 			}

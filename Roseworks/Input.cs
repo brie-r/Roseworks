@@ -1,14 +1,13 @@
 ﻿using System.Diagnostics;
 using System.Collections.Generic;
-using log4net;
 using Roseworks;
+using RoseLog;
+
 #pragma warning disable 0414
 namespace Roseworks
 {
-	public static class InputHandler
+	public static class Input
 	{
-		private static readonly ILog Log = LogManager.GetLogger(typeof(ECS));
-
 		public static int[] InputEntIDs;
 
 		// never initialized
@@ -57,7 +56,6 @@ namespace Roseworks
 
 		public static int AddInputBehavior(Behavior b)
 		{
-			Log.Info(b is IMouse);
 			int inputTypes = 0;
 			int index = -1;
 			if (b is IMouse)
@@ -97,7 +95,7 @@ namespace Roseworks
 			data.InputTypes |= InputTypeToFlags[typeof(InputType)];
 			data.RefIndex = AddInputBehavior(ECS.TypeToRef[typeof(ComType)]);
 		}
-		public static void HandleMove(float context)
+		public static void SendMove(float context)
 		{
 			int comID;
 			for (int i = 0; i < Data.Count; i++)
@@ -105,11 +103,11 @@ namespace Roseworks
 				if (Data[i].ComType == typeof(IMove))
 				{
 					comID = Data[i].ComID;
-					MoveRefs[Data.AtId(comID).RefIndex].MoveInput(comID, context);
+					MoveRefs[Data[i].RefIndex].MoveInput(comID, context);
 				}
 			}
 		}
-		public static void HandleMove(VecF2 context)
+		public static void SendMove(VecF2 context)
 		{
 			int comID;
 			for (int i = 0; i < Data.Count; i++)
@@ -117,11 +115,11 @@ namespace Roseworks
 				if(Data[i].ComType == typeof(IMove))
 				{
 					comID = Data[i].ComID;
-					MoveRefs[Data.AtId(comID).RefIndex].MoveInput(comID, context);
+					MoveRefs[Data[i].RefIndex].MoveInput(comID, context);
 				}
 			}
 		}
-		public static void HandleMove(VecF3 context)
+		public static void SendMove(VecF3 context)
 		{
 			int comID;
 			for (int i = 0; i < Data.Count; i++)
@@ -129,11 +127,11 @@ namespace Roseworks
 				if (Data[i].ComType == typeof(IMove))
 				{
 					comID = Data[i].ComID;
-					MoveRefs[Data.AtId(comID).RefIndex].MoveInput(comID, context);
+					MoveRefs[Data[i].RefIndex].MoveInput(comID, context);
 				}
 			}
 		}
-		public static void HandleMouse(VecF2 context)
+		public static void SendMouse(VecF2 context)
 		{
 			for (int i = 0; i < Data.Count; i++)
 			{
@@ -141,36 +139,31 @@ namespace Roseworks
 				MouseRefs[Data[i].RefIndex].MouseInput(comID, context);
 			}
 		}
-		public static int ReadInputState(int context)
-		{
-			return context;
-		}
-		public static void HandleStartEnd(int fireSlot, int value)
+		public static void SendStartEnd(int fireSlot, int value)
 		{
 			int comID;
 			int refIndex;
 			for (int i = 0; i < Data.Count; i++)
 			{
-
 				if (Data[i].ComType == typeof(IMouse))
 				{
 					comID = Data[i].ComID;
-					refIndex = Data.AtId(comID).RefIndex;
+					refIndex = Data[i].RefIndex;
 
-					bool shouldFire = StartEndRefs[refIndex].SlotFlags[fireSlot];
+					bool shouldFire = ((StartEndRefs[refIndex].SlotFlags & (1 << fireSlot)) != 0);
 					if (shouldFire)
 					{
-						if (DebugPrint) Log.Info("InputHandler.HandleFire()");
+						if (DebugPrint) Log.AppendLineAndWrite("InputHandler.HandleFire()");
 						if (value != 0)
 							StartEndRefs[refIndex].StartInput(comID, fireSlot, value);
 						else
 							StartEndRefs[refIndex].EndInput(comID, fireSlot);
 					}
 					if (DebugPrint)
-						Log.Info(
+						Log.AppendLineAndWrite(
 							System.Reflection.MethodBase.GetCurrentMethod().Name + " " +
 							fireSlot + " " + (value != 0 ? "down" : "up") + " " + value);
-					if (DebugPrint) Log.Info("InputHandler.HandleFire( " + fireSlot + " " + (value!=0?"down":"up") + " " + value + " )");
+					if (DebugPrint) Log.AppendLineAndWrite("InputHandler.HandleFire( " + fireSlot + " " + (value!=0?"down":"up") + " " + value + " )");
 				}
 			}
 		}
@@ -197,6 +190,6 @@ namespace Roseworks
 		void StartInput(int comID, int slot, float value = 1);
 		// Slot -1 fires when any fire input changes values
 		void EndInput(int comID, int slot);
-		public System.Collections.BitArray SlotFlags { get; set; }
+		public int SlotFlags { get; set; }
 	}
 }

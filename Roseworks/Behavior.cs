@@ -4,18 +4,19 @@ namespace Roseworks
 {
 	public interface Behavior
 	{
-		//public KCController.E.GenericController Controller;
 		/// <summary>
-		/// 
+		/// Runs once per behavior, when instantiated.
+		/// </summary>
+		public void Init() { }
+		/// <summary>
+		/// Runs each time a component is added to a behavior.
 		/// </summary>
 		/// <param name="comID"></param>
-		/// <returns>DataID for newly initiated component</returns>
+		/// <returns>DataID for newly added component</returns>
 		public int InitCom(int comID, int entID);
-		public void Init() { }
+		public bool ShouldTick { get; set; }
 		public void Tick(float deltaTime) { }
 		public void SetDefaultData(int dataID) { }
-		public bool ShouldTick { get; set; }
 		public System.Type[] Dependencies { get; set; }
-		//public System.Type[] OptionalIntegrations = null;
 	}
 }

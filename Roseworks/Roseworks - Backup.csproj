@@ -1,19 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>netstandard2.2</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="RelaStructures" Version="1.0.0" />
+    <PackageReference Include="log4net" Version="2.0.14" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="RelaStructures">
       <HintPath>ExternalDLLs\RelaStructures.dll</HintPath>
-    </Reference>
-    <Reference Include="RoseLog">
-      <HintPath>ExternalDLLs\RoseLog.dll</HintPath>
     </Reference>
   </ItemGroup>
 

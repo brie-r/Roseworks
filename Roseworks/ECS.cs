@@ -1,22 +1,18 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using RelaStructures;
-using log4net;
-using log4net.Config;
+using RoseLog;
 
 namespace Roseworks
 {
 	public static class ECS
 	{
-		private static readonly ILog Log = LogManager.GetLogger(typeof(ECS));
-		private static bool DebugPrint = true;
+		public static bool DebugPrint = true;
 		private static IMono Mono;
 
 		public static int MaxComsPerEnt = 256;
 		private static System.Type[] MandatoryBehaviors = { };
-		private static object BehaviorObject;
-		private static System.Text.StringBuilder DebugString =
-			new System.Text.StringBuilder();
+
 		public static List<System.Type> TypeList = new List<System.Type>();
 		public static Dictionary<System.Type, Behavior> TypeToRef =
 			new Dictionary<System.Type, Behavior>();
@@ -31,21 +27,17 @@ namespace Roseworks
 		public static void AddBehaviors(System.Type[] behaviors)
 		{
 			// TODO: make sure not already added
-			DebugString.AppendLine("ADDING BEHAVIORS:");
-
+			Log.AppendLineAndWrite("Adding Behaviors...");
 			// check for behaviors
 			if (behaviors != null && behaviors.Length > 0)
 				AddBehaviorDependencies(behaviors);
 			else
-				if (DebugPrint) Log.Info("No behaviors to load");
-			if (DebugPrint)
-				Log.Info(DebugString);
-
+				if (DebugPrint) Log.AppendLineAndWrite("No behaviors to load");
 		}
 		public static void AddBehaviors(string[] behaviorNames)
 		{
 			// TODO: make sure not already added
-			DebugString.AppendLine("ADDING BEHAVIORS:");
+			Log.AppendLineAndWrite("Adding Behaviors...");
 
 			// check for behaviors
 			if (behaviorNames != null && behaviorNames.Length > 0)
@@ -57,18 +49,14 @@ namespace Roseworks
 				{
 					behavior = System.Type.GetType(behaviorNames[i]);
 					if (behavior == null)
-						Log.Error("BehaviorEntManager: type named " + behaviorNames[i] + " not found");
+						Log.AppendLineAndWrite("BehaviorEntManager: type named " + behaviorNames[i] + " not found");
 					behaviorsToAdd[i] = behavior;
-					if (DebugPrint) Log.Info("Planning to add: " + behaviorsToAdd[i]);
+					if (DebugPrint) Log.AppendLineAndWrite("Planning to add: " + behaviorsToAdd[i]);
 				}
 				AddBehaviorDependencies(behaviorsToAdd);
 			}
 			else
-				if (DebugPrint) Log.Info("No behaviors to load");
-
-			// Log.Info component debug
-			if (DebugPrint)
-				Log.Info(DebugString);
+				if (DebugPrint) Log.AppendLineAndWrite("No behaviors to load");
 		}
 		/// <summary>
 		/// Recursive, depth first. Adds and initializes dependencies first, then dependents.
@@ -78,28 +66,26 @@ namespace Roseworks
 		{
 			if (dependencies != null && dependencies.Length > 0)
 			{
-				if (DebugPrint) Log.Info("Adding " + dependencies.Length + " behavior dependencies");
+				if (DebugPrint) Log.AppendLineAndWrite("Adding " + dependencies.Length + " behaviors");
 				for (int i = 0; i < dependencies.Length; i++)
 				{
-					if (DebugPrint) Log.Info("Add: " + dependencies[i]);
-
-					// if not instantiated
-				
+					if (DebugPrint) Log.AppendLineAndWrite("Add: " + dependencies[i]);
+					
 					if (TypeList.Contains(dependencies[i]) == false)
 					{
 						Behavior b = InstantiateBehavior(dependencies[i], i);
 
-						if (b == null && DebugPrint) Log.Info("Behavior not properly instantiated: " + dependencies[i]);
+						if (b == null && DebugPrint) Log.AppendLineAndWrite("Behavior not properly instantiated: " + dependencies[i]);
 
 						// set up dependencies, initialize
 						if (b.Dependencies != null && b.Dependencies.Length > 0)
 							AddBehaviorDependencies(b.Dependencies);
 						bool hasInput = b is IInput;
-						Log.Info(b.GetType() + " is" + (hasInput?" ":" NOT ") + "a subclass of IInput");
+						Log.AppendLineAndWrite(b.GetType() + " does" + (hasInput?" ":" NOT ") + "receive input");
 						if (hasInput)
 						{
-							if (DebugPrint) Log.Info(dependencies[i] + " has input");
-							InputHandler.AddInputBehavior(b);
+							if (DebugPrint) Log.AppendLineAndWrite(dependencies[i] + " receive input");
+							Input.AddInputBehavior(b);
 						}
 						b.Init();
 					}
@@ -111,6 +97,15 @@ namespace Roseworks
 			int entID = Ents.Request();
 			return entID;
 		}
+		public static int[] AddEnts(int count)
+		{
+			int[] entIDs = new int[count];
+			for (int i = 0; i < count; i++)
+			{
+				entIDs[i] = Ents.Request();
+			}
+			return entIDs;
+		}
 		public static int AddEntWithCom(System.Type comType)
 		{
 			int entID = Ents.Request();
@@ -121,7 +116,7 @@ namespace Roseworks
 		public static int AddEntWithCom<T>()
 		{
 			int entID = Ents.Request();
-			AddComToEnt<T>(entID);
+			AddComToEnt(typeof(T), entID);
 			return entID;
 		}
 
@@ -133,29 +128,33 @@ namespace Roseworks
 		/// <returns>EntID</returns>
 		public static int AddEntWithComs(System.Type[] comTypes = null)
 		{
+			if (comTypes == null || comTypes.Length == 0)
+				return -1;
 			int entID = Ents.Request();
-			if (comTypes != null)
-				AddComsToEnt(comTypes, entID);
+			AddComsToEnt(comTypes, entID);
 			return entID;
 		}
 		/// <summary>
 		/// 
 		/// </summary>
-		/// <param name="Count"></param>
-		/// <param name="comTypes"></param>
+		/// <param name="count"></param>
+		/// <param name="comType"></param>
 		/// <param name="receivesInput"></param>
 		/// <returns>EntIDs</returns>
-		public static int[] AddEntsWithComs(int Count, System.Type[] comTypes = null)
+ 		public static int[] AddEntsWithCom(int count, System.Type comType)
 		{
-			if (comTypes == null)
+			if (count == 0)
 				return null;
-
-			int[] entIDs = new int[Count];
-			for (int i = 0; i < Count; i++)
-			{
-				entIDs[i] = Ents.Request();
-				AddComsToEnt(comTypes, entIDs[i]);
-			}
+			int[] entIDs = AddEnts(count);
+			AddComToEnts(comType, entIDs);
+			return entIDs;
+		}
+	public static int[] AddEntsWithComs(int count, System.Type[] comTypes = null)
+		{
+			if (count == 0 || comTypes == null)
+				return null;
+			int[] entIDs = AddEnts(count);
+			AddComsToEnts(comTypes, entIDs);
 			return entIDs;
 		}
 		public static int AddComToEnt<T>(int entID = -1)
@@ -173,8 +172,6 @@ namespace Roseworks
 			if (comType == null)
 				return -1;
 
-			if (DebugPrint) Log.Info("AddComToEnt: " + comType);
-
 			Behavior b = TypeToRef[comType];
 			if (entID == -1)
 				entID = Ents.Request();
@@ -183,25 +180,28 @@ namespace Roseworks
 
 			if (ent.ComCount == MaxComsPerEnt)
 			{
-				Log.Error(nameof(ECS) + "." + nameof(AddComToEnt) + "(): max coms per ent exceeded");
+				Log.AppendLineAndWrite(nameof(ECS) + "." + nameof(AddComToEnt) + "(): max coms per ent exceeded");
 				return -1;
 			}
 
 			// set up dependencies, initialize
 			if (b.Dependencies != null && b.Dependencies.Length > 0)
+			{
+				if (DebugPrint) Log.AppendLineAndWrite("Calling AddComsToEnt from AddComToEnt (dependencies)");
 				AddComsToEnt(b.Dependencies);
+			}
 
 			int comID = Coms.Request();
-			Coms.AtId(comID).EntID = entID;
 			int dataID = TypeToRef[comType].InitCom(comID, entID);
+			Coms.AtId(comID).EntID = entID;
 			Coms.AtId(comID).DataID = dataID;
+			Coms.AtId(comID).ComType = comType;
 
 			ent.ComCount++;
 			int index = ent.ComCount - 1;
 			ent.ComIDs[index] = comID;
 			ent.ComTypes[index] = comType;
 			ent.DataIDs[index] = dataID;
-
 
 			return comID;
 		}
@@ -215,66 +215,18 @@ namespace Roseworks
 		{
 			if (comTypes == null || comTypes.Length <= 0)
 				return null;
-
 			int[] comIDs = new int[comTypes.Length];
-			Behavior b;
-
-			if (DebugPrint) Log.Info("Adding " + comTypes.Length + " component dependencies");
 			for (int i = 0; i < comTypes.Length; i++)
-			{
-				b = TypeToRef[comTypes[i]];
-				if (DebugPrint) Log.Info("Add: " + comTypes[i]);
-
-				if (entID == -1)
-					entID = Ents.Request();
-				// set up dependencies, initialize
-				if (b.Dependencies != null && b.Dependencies.Length > 0)
-					AddComsToEnt(b.Dependencies, entID);
-
-				int comID = Coms.Request();
-				Coms.AtId(comID).EntID = entID;
-				int dataID = b.InitCom(comID, entID);
-				Coms.AtId(comID).DataID = dataID;
-
-				ref SEnt ent = ref Ents.AtId(entID);
-				ent.ComCount++;
-				int index = ent.ComCount - 1;
-				ent.ComIDs[index] = comID;
-				ent.ComTypes[index] = comTypes[i];
-				ent.DataIDs[index] = dataID;
-			}
+				comIDs[i] = AddComToEnt(comTypes[i], entID);
 			return comIDs;
 		}
 		public static int[] AddComToEnts(System.Type comType, int[] entIDs = null)
 		{
 			if (comType == null || entIDs == null || entIDs.Length == 0)
 				return null;
-
 			int[] comIDs = new int[entIDs.Length];
-			Behavior b = TypeToRef[comType];
-
-			if (DebugPrint) Log.Info("Add: " + comType);
-
 			for (int i = 0; i < entIDs.Length; i++)
-			{
-				if (entIDs[i] == -1)
-					entIDs[i] = Ents.Request();
-				// set up dependencies, initialize
-				if (b.Dependencies != null && b.Dependencies.Length > 0)
-					AddComsToEnt(b.Dependencies);
-				// create and initialize new com
-				comIDs[i] = Coms.Request();
-				Coms.AtId(comIDs[i]).EntID = entIDs[i];
-				int dataID = b.InitCom(comIDs[i], entIDs[i]);
-				Coms.AtId(comIDs[i]).DataID = dataID;
-
-				ref SEnt ent = ref Ents.AtId(entIDs[i]);
-				ent.ComCount++;
-				int index = ent.ComCount - 1;
-				ent.ComIDs[index] = comIDs[i];
-				ent.ComTypes[index] = comType;
-				ent.DataIDs[index] = dataID;
-			}
+				comIDs[i] = AddComToEnt(comType, entIDs[i]);
 			return comIDs;
 		}
 		public static int[] AddComsToEnts(System.Type[] comTypes, int[] entIDs = null)
@@ -283,35 +235,8 @@ namespace Roseworks
 				return null;
 
 			int[] outputComIDs = new int[comTypes.Length * entIDs.Length];
-			int outputIndex;
-			Behavior b;
-			for (int comI = 0; comI < comTypes.Length; comI++)
-			{
-				b = TypeToRef[comTypes[comI]];
-				if (DebugPrint) Log.Info("Add: " + comTypes[comI]);
-
-				for (int entI = 0; entI < entIDs.Length; entI++)
-				{
-					outputIndex = comI * entIDs.Length + entI;
-					if (entIDs[entI] == -1)
-						entIDs[entI] = Ents.Request();
-					// set up dependencies, initialize
-					if (b.Dependencies != null && b.Dependencies.Length > 0)
-						AddComsToEnt(b.Dependencies);
-					// create and initialize new com
-					outputComIDs[outputIndex] = Coms.Request();
-					Coms.AtId(outputComIDs[outputIndex]).EntID = entIDs[entI];
-					int dataID = b.InitCom(outputComIDs[outputIndex], entIDs[entI]);
-					Coms.AtId(outputComIDs[outputIndex]).DataID = dataID;
-
-					ref SEnt ent = ref Ents.AtId(entIDs[entI]);
-					ent.ComCount++;
-					int index = ent.ComCount - 1;
-					ent.ComIDs[index] = outputComIDs[outputIndex];
-					ent.ComTypes[index] = comTypes[comI];
-					ent.DataIDs[index] = dataID;
-				}
-			}
+			for (int i = 0; i < entIDs.Length; i++)
+				System.Array.Copy(AddComsToEnt(comTypes, entIDs[i]), 0, outputComIDs, i * comTypes.Length, comTypes.Length);
 			return outputComIDs;
 		}
 		/// <summary>
@@ -335,11 +260,9 @@ namespace Roseworks
 			}
 			return -1;
 		}
-		public static void InitScene(object e, IMono mono)
+		public static void InitScene(IMono mono)
 		{
-			BehaviorObject = e;
 			Mono = mono;
-
 			for (int i = 0; i < MandatoryBehaviors.Length; i++)
 				AddBehaviors(MandatoryBehaviors);
 
@@ -364,10 +287,10 @@ namespace Roseworks
 		}
 		public static Behavior InstantiateBehavior(System.Type behavior, int behaviorIndex)
 		{
-			if (behavior.IsSubclassOf(typeof(Behavior)) == false && DebugPrint)
-				Log.Error("[EntManager.InstantiateBehavior()] " + behavior + " is not a subclass of Behavior");
+			if (typeof(Behavior).IsAssignableFrom(behavior) == false && DebugPrint)
+				Log.AppendLineAndWrite("[EntManager.InstantiateBehavior()] " + behavior + " does not implement Behavior");
 
-			Behavior b = Mono.Instantiate(BehaviorObject, behavior);
+			Behavior b = Mono.Instantiate(Mono, behavior);
 			TypeList.Add(behavior);
 			TypeToRef[behavior] = b;
 			return b;

@@ -2,13 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using RelaStructures;
-using log4net;
+using RoseLog;
+
 namespace Roseworks
 {
 	public static class FSM
 	{
-		private static readonly ILog Log = LogManager.GetLogger(typeof(ECS));
-
 		public static int DefaultState = default;
 		public const int InvalidState = -1;
 
@@ -36,7 +35,6 @@ namespace Roseworks
 		#endregion
 
 		static bool DebugPrint = true;
-		static System.Text.StringBuilder sb = new System.Text.StringBuilder();
 
 		/// <returns>DataID of newly added FSM</returns>
 		public static int AddState(Type comType, int entID, float time)
@@ -86,7 +84,7 @@ namespace Roseworks
 		// TODO: switch to to transition instead?
 		public static void ChangeState(float time, int stateID, int to, int timerID = -1, bool ignoreSame = false)
 		{
-			sb.Clear();
+			Log.Text.Clear();
 			ref SState state = ref States.AtId(stateID);
 
 			if (Equals(state.State, to) && ignoreSame == true)
@@ -100,20 +98,19 @@ namespace Roseworks
 			// if changestate runs again during this, exit
 			if (ExitChangeState == true)
 			{
-				if (DebugPrint) Log.Info("Exiting ChangeState early. State was changed by callback");
+				if (DebugPrint) Log.AppendLineAndWrite("Exiting ChangeState early. State was changed by callback");
 				return;
-			}
-			;
-			sb.AppendLine(typeof(int).FullName + ": " + state.State + " -> " + to);
-			sb.Replace("FSM", "");
-			sb.Replace("+", ".");
+			};
+			Log.AppendLineAndWrite(typeof(int).FullName + ": " + state.State + " -> " + to);
+			Log.Text.Replace("FSM", "");
+			Log.Text.Replace("+", ".");
 
 			if (state.State == to && timerID >= 0)
 			{
-				sb.Append("Loop timer " + timerID + ": " + DFormatTime(Timer.EndTime(timerID)) + " -> ");
+				Log.AppendAndWrite("Loop timer " + timerID + ": " + DFormatTime(Timer.EndTime(timerID)) + " -> ");
 
 				Timer.Loop(timerID);
-				sb.Append(DFormatTime(Timer.EndTime(timerID)) + ". ");
+				Log.AppendAndWrite(DFormatTime(Timer.EndTime(timerID)) + ". ");
 				Timer.CancelByComID(comID: state.ComID, ignoreID: timerID);
 			}
 			else
@@ -142,9 +139,9 @@ namespace Roseworks
 				}
 			}
 
-			if (DebugPrint && sb.Length > 0)
-				Log.Info(sb);
-			sb.Clear(); state.State = to;
+			if (DebugPrint && Log.Text.Length > 0)
+				Log.AppendLineAndWrite(Log.Text.ToString());
+			Log.Text.Clear(); state.State = to;
 			ExitChangeState = true;
 		}
 		public static string DFormatTime(float t)

@@ -10,10 +10,10 @@ namespace Roseworks
 		public bool Active;
 		public static void Clear(ref SCom obj)
 		{
-			obj.EntID = 0;
-			obj.DataID = 0;
+			obj.EntID = -1;
+			obj.DataID = -1;
 			obj.ComType = null;
-			obj.Active = false;
+			obj.Active = true;
 		}
 		public static void Move(ref SCom from, ref SCom to)
 		{
@@ -22,5 +22,5 @@ namespace Roseworks
 			to.ComType = from.ComType;
 			to.Active = from.Active;
 		}
-}
+	}
 }
