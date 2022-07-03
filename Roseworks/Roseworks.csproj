@@ -12,9 +12,6 @@
     <Reference Include="RelaStructures">
       <HintPath>ExternalDLLs\RelaStructures.dll</HintPath>
     </Reference>
-    <Reference Include="RoseLog">
-      <HintPath>ExternalDLLs\RoseLog.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>
