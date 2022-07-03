@@ -7,6 +7,11 @@ namespace Roseworks
 	public struct VecF2
 	{
 		public float X, Y;
+		public VecF2(float x, float y)
+		{
+			X = x;
+			Y = y;
+		}
 		public float this[int i]
 		{
 			get
@@ -26,6 +31,12 @@ namespace Roseworks
 	public struct VecF3
 	{
 		public float X, Y, Z;
+		public VecF3(float x, float y, float z)
+		{
+			X = x;
+			Y = y;
+			Z = z;
+		}
 		public float this[int i]
 		{
 			get
@@ -47,6 +58,11 @@ namespace Roseworks
 	public struct VecI2
 	{
 		public int X, Y;
+		public VecI2(int x, int y)
+		{
+			X = x;
+			Y = y;
+		}
 		public int this[int i]
 		{
 			get
@@ -66,6 +82,12 @@ namespace Roseworks
 	public struct VecI3
 	{
 		public int X, Y, Z;
+		public VecI3(int x, int y, int z)
+		{
+			X = x;
+			Y = y;
+			Z = z;
+		}
 		public int this[int i]
 		{
 			get

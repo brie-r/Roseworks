@@ -8,21 +8,10 @@ namespace RoseworksTest
 	[TestClass]
 	public class ECSTest
 	{
-		public void Reset()
-		{
-			typeof(ECS).TypeInitializer.Invoke(null, null);
-		}
-
-		public void Init()
-		{
-			Reset();
-			MonoSimulator ms = new MonoSimulator();
-			ECS.InitScene(ms);
-		}
 		[TestMethod]
 		public void InitAndAddBehavior()
 		{
-			Init();
+			TestUtil.Init();
 			ECS.AddBehavior<BExample0>();
 			Assert.IsTrue(ECS.TypeList.Count == 1);
 			Assert.IsTrue(ECS.TypeToRef[typeof(BExample0)] != null);
@@ -31,7 +20,7 @@ namespace RoseworksTest
 		[TestMethod]
 		public void InitAndAddBehaviorDependent()
 		{
-			Init();
+			TestUtil.Init();
 			ECS.AddBehavior<BDependent>();
 			Assert.IsTrue(ECS.TypeList.Count == 2);
 			Assert.IsTrue(ECS.TypeToRef[typeof(BDependent)] != null);
@@ -41,7 +30,7 @@ namespace RoseworksTest
 		}
 		public void InitAndAddBehaviors()
 		{
-			Init();
+			TestUtil.Init();
 			ECS.AddBehaviors(new Type[]{typeof(BExample0), typeof(BExample1)});
 			Assert.IsTrue(ECS.TypeList.Count == 2);
 			Assert.IsTrue(ECS.TypeToRef[typeof(BExample0)] != null);
@@ -60,7 +49,7 @@ namespace RoseworksTest
 		[TestMethod]
 		public void AddEntWithComDependent()
 		{
-			InitAndAddBehavior();
+			InitAndAddBehaviorDependent();
 			ECS.AddEntWithCom<BDependent>();
 			Console.WriteLine("Assert");
 			Assert.IsTrue(ECS.Coms.Count == 2);

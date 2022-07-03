@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using RelaStructures;
-using RoseLog;
 
 namespace Roseworks
 {
@@ -84,7 +83,6 @@ namespace Roseworks
 		// TODO: switch to to transition instead?
 		public static void ChangeState(float time, int stateID, int to, int timerID = -1, bool ignoreSame = false)
 		{
-			Log.Text.Clear();
 			ref SState state = ref States.AtId(stateID);
 
 			if (Equals(state.State, to) && ignoreSame == true)
@@ -98,32 +96,27 @@ namespace Roseworks
 			// if changestate runs again during this, exit
 			if (ExitChangeState == true)
 			{
-				if (DebugPrint) Log.AppendLineAndWrite("Exiting ChangeState early. State was changed by callback");
+				if (DebugPrint) Logger.WriteLine("Exiting ChangeState early. State was changed by callback");
 				return;
 			};
-			Log.AppendLineAndWrite(typeof(int).FullName + ": " + state.State + " -> " + to);
-			Log.Text.Replace("FSM", "");
-			Log.Text.Replace("+", ".");
+			Logger.WriteLine(typeof(int).FullName + ": " + state.State + " -> " + to);
 
 			if (state.State == to && timerID >= 0)
 			{
-				Log.AppendAndWrite("Loop timer " + timerID + ": " + DFormatTime(Timer.EndTime(timerID)) + " -> ");
+				Logger.Write("Loop timer " + timerID + ": " + DFormatTime(Timer.EndTime(timerID)) + " -> ");
 
 				Timer.Loop(timerID);
-				Log.AppendAndWrite(DFormatTime(Timer.EndTime(timerID)) + ". ");
+				Logger.Write(DFormatTime(Timer.EndTime(timerID)) + ". ");
 				Timer.CancelByComID(comID: state.ComID, ignoreID: timerID);
 			}
 			else
 			{
 				Timer.CancelByComID(state.ComID);
 			}
-
-			//UpdateActive();
-
 			// Add timers
-			for (int joinIndex = 0; joinIndex < Joins.Count; joinIndex++)
+			for (int joinIx = 0; joinIx < Joins.Count; joinIx++)
 			{
-				ref SJoin join = ref Joins[joinIndex];
+				ref SJoin join = ref Joins[joinIx];
 				ref SRule rule = ref Rules.AtId(join.RuleID);
 
 				if (join.TimerID < 0 && StateValid(rule.To) && join.ActiveChecks.HasFlag(EActive.From))
@@ -138,10 +131,7 @@ namespace Roseworks
 					Timer.Add(time, outTimerID: out join.TimerID, comID: join.ComID, duration: rule.Duration, callback: Callback, autoCancel: false);
 				}
 			}
-
-			if (DebugPrint && Log.Text.Length > 0)
-				Log.AppendLineAndWrite(Log.Text.ToString());
-			Log.Text.Clear(); state.State = to;
+			state.State = to;
 			ExitChangeState = true;
 		}
 		public static string DFormatTime(float t)

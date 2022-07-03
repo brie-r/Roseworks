@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using RelaStructures;
-using RoseLog;
+
 
 namespace Roseworks
 {
@@ -27,17 +27,17 @@ namespace Roseworks
 		public static void AddBehaviors(System.Type[] behaviors)
 		{
 			// TODO: make sure not already added
-			Log.AppendLineAndWrite("Adding Behaviors...");
+			Logger.WriteLine("Adding Behaviors...");
 			// check for behaviors
 			if (behaviors != null && behaviors.Length > 0)
 				AddBehaviorDependencies(behaviors);
 			else
-				if (DebugPrint) Log.AppendLineAndWrite("No behaviors to load");
+				if (DebugPrint) Logger.WriteLine("No behaviors to load");
 		}
 		public static void AddBehaviors(string[] behaviorNames)
 		{
 			// TODO: make sure not already added
-			Log.AppendLineAndWrite("Adding Behaviors...");
+			Logger.WriteLine("Adding Behaviors...");
 
 			// check for behaviors
 			if (behaviorNames != null && behaviorNames.Length > 0)
@@ -49,14 +49,14 @@ namespace Roseworks
 				{
 					behavior = System.Type.GetType(behaviorNames[i]);
 					if (behavior == null)
-						Log.AppendLineAndWrite("BehaviorEntManager: type named " + behaviorNames[i] + " not found");
+						Logger.WriteLine("BehaviorEntManager: type named " + behaviorNames[i] + " not found");
 					behaviorsToAdd[i] = behavior;
-					if (DebugPrint) Log.AppendLineAndWrite("Planning to add: " + behaviorsToAdd[i]);
+					if (DebugPrint) Logger.WriteLine("Planning to add: " + behaviorsToAdd[i]);
 				}
 				AddBehaviorDependencies(behaviorsToAdd);
 			}
 			else
-				if (DebugPrint) Log.AppendLineAndWrite("No behaviors to load");
+				if (DebugPrint) Logger.WriteLine("No behaviors to load");
 		}
 		/// <summary>
 		/// Recursive, depth first. Adds and initializes dependencies first, then dependents.
@@ -66,27 +66,24 @@ namespace Roseworks
 		{
 			if (dependencies != null && dependencies.Length > 0)
 			{
-				if (DebugPrint) Log.AppendLineAndWrite("Adding " + dependencies.Length + " behaviors");
+				if (DebugPrint) Logger.WriteLine("Adding " + dependencies.Length + " behaviors");
 				for (int i = 0; i < dependencies.Length; i++)
 				{
-					if (DebugPrint) Log.AppendLineAndWrite("Add: " + dependencies[i]);
+					if (DebugPrint) Logger.WriteLine("Add: " + dependencies[i]);
 					
 					if (TypeList.Contains(dependencies[i]) == false)
 					{
 						Behavior b = InstantiateBehavior(dependencies[i], i);
 
-						if (b == null && DebugPrint) Log.AppendLineAndWrite("Behavior not properly instantiated: " + dependencies[i]);
+						if (b == null && DebugPrint) Logger.WriteLine("Behavior not properly instantiated: " + dependencies[i]);
 
 						// set up dependencies, initialize
 						if (b.Dependencies != null && b.Dependencies.Length > 0)
 							AddBehaviorDependencies(b.Dependencies);
 						bool hasInput = b is IInput;
-						Log.AppendLineAndWrite(b.GetType() + " does" + (hasInput?" ":" NOT ") + "receive input");
+						Logger.WriteLine(b.GetType() + " does" + (hasInput?" ":" NOT ") + "receive input");
 						if (hasInput)
-						{
-							if (DebugPrint) Log.AppendLineAndWrite(dependencies[i] + " receive input");
 							Input.AddInputBehavior(b);
-						}
 						b.Init();
 					}
 				}
@@ -141,7 +138,7 @@ namespace Roseworks
 		/// <param name="comType"></param>
 		/// <param name="receivesInput"></param>
 		/// <returns>EntIDs</returns>
- 		public static int[] AddEntsWithCom(int count, System.Type comType)
+		public static int[] AddEntsWithCom(int count, System.Type comType)
 		{
 			if (count == 0)
 				return null;
@@ -180,14 +177,14 @@ namespace Roseworks
 
 			if (ent.ComCount == MaxComsPerEnt)
 			{
-				Log.AppendLineAndWrite(nameof(ECS) + "." + nameof(AddComToEnt) + "(): max coms per ent exceeded");
+				Logger.WriteLine(nameof(ECS) + "." + nameof(AddComToEnt) + "(): max coms per ent exceeded");
 				return -1;
 			}
 
 			// set up dependencies, initialize
 			if (b.Dependencies != null && b.Dependencies.Length > 0)
 			{
-				if (DebugPrint) Log.AppendLineAndWrite("Calling AddComsToEnt from AddComToEnt (dependencies)");
+				if (DebugPrint) Logger.WriteLine("Calling AddComsToEnt from AddComToEnt (dependencies)");
 				AddComsToEnt(b.Dependencies);
 			}
 
@@ -202,6 +199,9 @@ namespace Roseworks
 			ent.ComIDs[index] = comID;
 			ent.ComTypes[index] = comType;
 			ent.DataIDs[index] = dataID;
+
+			if (typeof(IInput).IsAssignableFrom(comType))
+				Input.AddInputCom(comType, 2);
 
 			return comID;
 		}
@@ -288,7 +288,7 @@ namespace Roseworks
 		public static Behavior InstantiateBehavior(System.Type behavior, int behaviorIndex)
 		{
 			if (typeof(Behavior).IsAssignableFrom(behavior) == false && DebugPrint)
-				Log.AppendLineAndWrite("[EntManager.InstantiateBehavior()] " + behavior + " does not implement Behavior");
+				Logger.WriteLine("[EntManager.InstantiateBehavior()] " + behavior + " does not implement Behavior");
 
 			Behavior b = Mono.Instantiate(Mono, behavior);
 			TypeList.Add(behavior);
