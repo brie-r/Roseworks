@@ -15,7 +15,7 @@ namespace RoseworksTest
 		public static void Init()
 		{
 			Reset();
-			MonoSimulator ms = new MonoSimulator();
+			InstSimulator ms = new InstSimulator();
 			ECS.InitScene(ms);
 		}
 	}

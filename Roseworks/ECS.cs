@@ -1,14 +1,15 @@
-﻿using System.Collections;
+﻿// using System.Collections;
 using System.Collections.Generic;
 using RelaStructures;
-
+using System.Collections.Concurrent;
+using System.Threading.Tasks;
 
 namespace Roseworks
 {
 	public static class ECS
 	{
 		public static bool DebugPrint = true;
-		private static IMono Mono;
+		private static IInstantiator Inst;
 
 		public static int MaxComsPerEnt = 256;
 		private static System.Type[] MandatoryBehaviors = { };
@@ -260,14 +261,14 @@ namespace Roseworks
 			}
 			return -1;
 		}
-		public static void InitScene(IMono mono)
+		public static void InitScene(IInstantiator inst)
 		{
-			Mono = mono;
+			Inst = inst;
 			for (int i = 0; i < MandatoryBehaviors.Length; i++)
 				AddBehaviors(MandatoryBehaviors);
 
 			// behaviors, ents, coms
-			object[] ent = Mono.GetEditorEnts();
+			object[] ent = Inst.GetEditorEnts();
 			for (int i = 0; i < ent.Length; i++)
 				AddBehaviors(((IEditorEnt) ent[i]).LoadBehaviors);
 		}
@@ -290,13 +291,13 @@ namespace Roseworks
 			if (typeof(Behavior).IsAssignableFrom(behavior) == false && DebugPrint)
 				Logger.WriteLine("[EntManager.InstantiateBehavior()] " + behavior + " does not implement Behavior");
 
-			Behavior b = Mono.Instantiate(Mono, behavior);
+			Behavior b = Inst.Instantiate(Inst, behavior);
 			TypeList.Add(behavior);
 			TypeToRef[behavior] = b;
 			return b;
 		}
 	}
-	public interface IMono
+	public interface IInstantiator
 	{
 		public Behavior Instantiate(object parent, System.Type behavior);
 		public object[] GetEditorEnts();
