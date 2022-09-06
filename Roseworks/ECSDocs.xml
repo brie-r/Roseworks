@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<root>
+	<ECSParams>
+		<typeparam name="T">Type of component to register</typeparam>
+		<param name="comType">Type of component to register</param>
+		<param name="comTypes">Types of components to register</param>
+		<param name="entID">ID of entity to add component to</param>
+		<param name="count">Number of entities to register</param>
+	</ECSParams>
+	<addCom>
+		<summary>
+			Register component and add to existing entity.
+		</summary>
+		<returns>
+			Component ID of component registered
+			<br></br>
+			-1 if: entity not found, component limit reached, component per entity limit reached
+		</returns>
+	</addCom>
+	<addComs>
+		<summary>
+			Register multiple components of different types and add to existing entity.
+		</summary>
+		<returns>
+			Array of component IDs for all components registered
+			<br></br>
+			Null if: entity not found, component array invalid
+			Contains -1 for each component requested if: component limit reached, component per entity limit reached
+		</returns>
+	</addComs>
+</root>

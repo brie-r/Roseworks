@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.32106.194
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32819.101
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Roseworks", "Roseworks\Roseworks.csproj", "{7C243234-68B7-4CBD-B9E1-5F82D5EC321F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoseworksTest", "RoseworksTest\RoseworksTest.csproj", "{040B65BA-028E-4468-8466-F50E6D378F00}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RoseworksTest", "RoseworksTest\RoseworksTest.csproj", "{5C967EEB-3830-486D-A690-081EC80E33E8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{7C243234-68B7-4CBD-B9E1-5F82D5EC321F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7C243234-68B7-4CBD-B9E1-5F82D5EC321F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7C243234-68B7-4CBD-B9E1-5F82D5EC321F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{040B65BA-028E-4468-8466-F50E6D378F00}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{040B65BA-028E-4468-8466-F50E6D378F00}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{040B65BA-028E-4468-8466-F50E6D378F00}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{040B65BA-028E-4468-8466-F50E6D378F00}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C967EEB-3830-486D-A690-081EC80E33E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C967EEB-3830-486D-A690-081EC80E33E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C967EEB-3830-486D-A690-081EC80E33E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C967EEB-3830-486D-A690-081EC80E33E8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

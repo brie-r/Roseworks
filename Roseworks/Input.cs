@@ -8,20 +8,17 @@ namespace Roseworks
 {
 	public static class Input
 	{
-		public static int[] InputEntIDs;
+		private static StackTrace st = new StackTrace();
+		public static bool DebugPrint = true;
+		public static InputState State;
 
-		[System.Flags] public enum EInputTypes { None = 0, Trigger = 1 << 0, Move = 1 << 1, Mouse = 1 << 2 }
-		public enum EInputTypesNoFlag {Trigger, Move, Mouse}
-		public static int InputTypeCount = System.Enum.GetValues(typeof(EInputTypes)).Length - 1;
+		public static void Init()
+		{
+			State = new InputState();
+			State.Init();
+		}
 
-		public static Dictionary<System.Type, int[]> ComTypeToRefsIx = new Dictionary<System.Type, int[]>();
-		public static Dictionary<System.Type, int> TypeToInputTypes = new Dictionary<System.Type, int>();
-		public static RelaStructures.StructReArray<SData> Data = new RelaStructures.StructReArray<SData>(byte.MaxValue + 1, short.MaxValue + 1, ClearAction, MoveAction, InitAction);
-		public static System.Type[] InputTypes = { typeof(IInputTrigger), typeof(IInputMove), typeof(IInputMouse) };
-		public static List<IInputTrigger> TriggerRefs = new List<IInputTrigger>();
-		public static List<IInputMove> MoveRefs = new List<IInputMove>();
-		public static List<IInputMouse> MouseRefs = new List<IInputMouse>();
-		public struct SData
+		public struct SInput
 		{
 			public int ComID;
 			public System.Type ComType;
@@ -29,7 +26,7 @@ namespace Roseworks
 			public int[] RefIx;
 			public int PlayerID;
 		}
-		private static void ClearAction(ref SData obj)
+		public static void ClearAction(ref SInput obj)
 		{
 			obj.ComID = -1;
 			obj.ComType = null;
@@ -37,7 +34,7 @@ namespace Roseworks
 			obj.PlayerID = -1;
 			System.Array.Fill(obj.RefIx, -1);
 		}
-		private static void MoveAction(ref SData from, ref SData to)
+		public static void MoveAction(ref SInput from, ref SInput to)
 		{
 			to.ComID = from.ComID;
 			to.ComType = from.ComType;
@@ -46,70 +43,55 @@ namespace Roseworks
 			to.PlayerID = from.PlayerID;
 			System.Array.Copy(from.RefIx, to.RefIx, from.RefIx.Length);
 		}
-		private static void InitAction(ref SData obj)
+		public static void InitAction(ref SInput obj)
 		{
-			obj.RefIx = new int[InputTypeCount];
+			obj.RefIx = new int[State.InputTypeCount];
 			System.Array.Fill(obj.RefIx, -1);
 		}
-
-		private static StackTrace st = new StackTrace();
-		public static bool DebugPrint = true;
-
-		// store ents that receive input
-		// send inputs to their behaviors if ReceivesInput == true
-		// store behavior property structs instead of specific types (dimensions, constraints, whatever)
-		// simulted input?
 
 		public static void AddInputBehavior(Behavior b)
 		{
 			int inputTypes = 0;
-			int currentInputTypeCount = 0;
-			for (int i = 0; i < InputTypeCount; i++)
+			int currentInputTypeCount;
+			for (int i = 0; i < State.InputTypeCount; i++)
 			{
-				if (InputTypes[i].IsAssignableFrom(b.GetType()) == true)
+				if (State.InputTypes[i].IsAssignableFrom(b.GetType()) == true)
 				{
 					inputTypes |= 1 >> i;
 					currentInputTypeCount = 0;
 					if (b is IInputTrigger)
 					{
-						TriggerRefs.Add(b as IInputTrigger);
-						currentInputTypeCount = TriggerRefs.Count;
+						State.TriggerRefs.Add(b as IInputTrigger);
+						currentInputTypeCount = State.TriggerRefs.Count;
 					}
 					if (b is IInputMove)
 					{
-						MoveRefs.Add(b as IInputMove);
-						currentInputTypeCount = MoveRefs.Count;
+						State.MoveRefs.Add(b as IInputMove);
+						currentInputTypeCount = State.MoveRefs.Count;
 					}
 					if (b is IInputMouse)
 					{
-						MouseRefs.Add(b as IInputMouse);
-						currentInputTypeCount = MouseRefs.Count;
+						State.MouseRefs.Add(b as IInputMouse);
+						currentInputTypeCount = State.MouseRefs.Count;
 					}
-					ComTypeToRefsIx.TryAdd(b.GetType(), new int[InputTypeCount]);
-					ComTypeToRefsIx[b.GetType()][i] = currentInputTypeCount - 1;
+					State.ComTypeToRefsIx.TryAdd(b.GetType(), new int[State.InputTypeCount]);
+					State.ComTypeToRefsIx[b.GetType()][i] = currentInputTypeCount - 1;
 				}
 			}
-			TypeToInputTypes[b.GetType()] = inputTypes;
+			State.TypeToInputTypes[b.GetType()] = inputTypes;
 		}
 		public static void AddInputCom(System.Type comType, int comID)
 		{
-			int dataID = Data.Request();
-			ref SData data = ref Data.AtId(dataID);
+			int dataID = State.Data.Request();
+			ref SInput data = ref State.Data.AtId(dataID);
 			data.ComID = comID;
 			data.ComType = comType;
-			for (int i = 0; i < InputTypeCount; i++)
+			for (int i = 0; i < State.InputTypeCount; i++)
 			{
-				Logger.WriteLine("AddInputCom...\tComType: " + comType + "\t" + InputTypes[i] + "\t" + comType + "\t" + InputTypes[i].IsAssignableFrom(comType));
-				if (InputTypes[i].IsAssignableFrom(comType))
+				if (State.InputTypes[i].IsAssignableFrom(comType))
 				{
 					data.InputTypeFlags |= 1 << i;
-					for (int printIx = 0; printIx < ComTypeToRefsIx[comType].Length; printIx++)
-					{
-						// ComTypeToRefsIx set wrong
-						Logger.Write("" + ComTypeToRefsIx[comType][printIx] + " ");
-					}
-					Logger.WriteLine("");
-					data.RefIx = ComTypeToRefsIx[comType];
+					data.RefIx = State.ComTypeToRefsIx[comType];
 				}
 			}
 		}
@@ -117,13 +99,13 @@ namespace Roseworks
 		{
 			int refIx;
 			int comID;
-			for (int i = 0; i < Data.Count; i++)
+			for (int i = 0; i < State.Data.Count; i++)
 			{
-				if (UBit.HasFlag(Data[i].InputTypeFlags, (int)EInputTypes.Move))
+				if (UBit.HasFlag(State.Data[i].InputTypeFlags, (int)InputState.EInputTypes.Move))
 				{
-					refIx = Data[i].RefIx[(int)EInputTypesNoFlag.Move];
-					comID = Data[i].ComID;
-					MoveRefs[refIx].MoveInput(comID, context);
+					refIx = State.Data[i].RefIx[(int)InputState.EInputTypesNoFlag.Move];
+					comID = State.Data[i].ComID;
+					State.MoveRefs[refIx].MoveInput(comID, context);
 				}
 			}
 		}
@@ -131,15 +113,13 @@ namespace Roseworks
 		{
 			int refIx;
 			int comID;
-			for (int i = 0; i < Data.Count; i++)
+			for (int i = 0; i < State.Data.Count; i++)
 			{
-				if (UBit.HasFlag(Data[i].InputTypeFlags, (int)EInputTypes.Move))
+				if (UBit.HasFlag(State.Data[i].InputTypeFlags, (int)InputState.EInputTypes.Move))
 				{
-					// Data.RefIx not being set correctly for all
-					refIx = Data[i].RefIx[(int)EInputTypesNoFlag.Move];
-					Logger.WriteLine("Flag.Move: " + (int)EInputTypesNoFlag.Move + "\tRefIx: " + refIx + "\tMoveRefs.Count: " + MoveRefs.Count);
-					comID = Data[i].ComID;
-					MoveRefs[refIx].MoveInput(comID, context);
+					refIx = State.Data[i].RefIx[(int)InputState.EInputTypesNoFlag.Move];
+					comID = State.Data[i].ComID;
+					State.MoveRefs[refIx].MoveInput(comID, context);
 				}
 			}
 		}
@@ -147,13 +127,13 @@ namespace Roseworks
 		{
 			int refIx;
 			int comID;
-			for (int i = 0; i < Data.Count; i++)
+			for (int i = 0; i < State.Data.Count; i++)
 			{
-				if (UBit.HasFlag(Data[i].InputTypeFlags, (int)EInputTypes.Move))
+				if (UBit.HasFlag(State.Data[i].InputTypeFlags, (int)InputState.EInputTypes.Move))
 				{
-					refIx = Data[i].RefIx[(int)EInputTypesNoFlag.Move];
-					comID = Data[i].ComID;
-					MoveRefs[refIx].MoveInput(comID, context);
+					refIx = State.Data[i].RefIx[(int)InputState.EInputTypesNoFlag.Move];
+					comID = State.Data[i].ComID;
+					State.MoveRefs[refIx].MoveInput(comID, context);
 				}
 			}
 		}
@@ -161,13 +141,13 @@ namespace Roseworks
 		{
 			int refIx;
 			int comID;
-			for (int i = 0; i < Data.Count; i++)
+			for (int i = 0; i < State.Data.Count; i++)
 			{
-				if (UBit.HasFlag(Data[i].InputTypeFlags, (int)EInputTypes.Mouse))
+				if (UBit.HasFlag(State.Data[i].InputTypeFlags, (int)InputState.EInputTypes.Mouse))
 				{
-					refIx = Data[i].RefIx[(int)EInputTypesNoFlag.Mouse];
-					comID = Data[i].ComID;
-					MouseRefs[refIx].MouseInput(comID, context);
+					refIx = State.Data[i].RefIx[(int)InputState.EInputTypesNoFlag.Mouse];
+					comID = State.Data[i].ComID;
+					State.MouseRefs[refIx].MouseInput(comID, context);
 				}
 			}
 		}
@@ -175,29 +155,21 @@ namespace Roseworks
 		{
 			int refIx;
 			int comID;
-			for (int i = 0; i < Data.Count; i++)
+			for (int i = 0; i < State.Data.Count; i++)
 			{
-				refIx = Data[i].RefIx[(int)EInputTypesNoFlag.Trigger];
-				comID = Data[i].ComID;
-				if (DebugPrint)
-					Logger.WriteLine(System.Reflection.MethodBase.GetCurrentMethod().Name + "(slot " + triggerSlot + " " + (value != 0 ? "down" : "up") + ")");
+				refIx = State.Data[i].RefIx[(int)InputState.EInputTypesNoFlag.Trigger];
+				comID = State.Data[i].ComID;
 				if (
 					refIx >= 0 &&
 					comID >= 0 &&
-					UBit.HasFlag(Data[i].InputTypeFlags, (int)EInputTypes.Trigger) &&
-					UBit.GetBit(TriggerRefs[refIx].SlotFlags, triggerSlot))
+					UBit.HasFlag(State.Data[i].InputTypeFlags, (int)InputState.EInputTypes.Trigger) &&
+					UBit.GetBit(State.TriggerRefs[refIx].SlotFlags, triggerSlot))
 				{
-					if (DebugPrint) Logger.WriteLine("Input sent");
 					if (value != 0)
-						TriggerRefs[refIx].StartInput(comID, triggerSlot, value);
+						State.TriggerRefs[refIx].StartInput(comID, triggerSlot, value);
 					else
-						TriggerRefs[refIx].EndInput(comID, triggerSlot);
+						State.TriggerRefs[refIx].EndInput(comID, triggerSlot);
 				}
-				else
-				{
-					if (DebugPrint) Logger.WriteLine("Input not sent");
-				}
-
 			}
 		}
 	}

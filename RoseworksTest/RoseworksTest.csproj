@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,6 +13,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Roseworks\Roseworks.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="RelaStructures">
+      <HintPath>..\..\RelaStructures\RelaStructures\bin\Release\net6.0\RelaStructures.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

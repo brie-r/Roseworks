@@ -19,7 +19,7 @@ namespace RoseworksTest
 		{
 			int dataID = Data.Request();
 			SetDefaultData(dataID);
-			ECS.Coms.AtId(comID).DataID = dataID;
+			ECS.ComAtId(comID).DataID = dataID;
 			return dataID;
 		}
 		public void SetDefaultData(int dataID)

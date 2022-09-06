@@ -22,10 +22,10 @@ namespace RoseworksTest
 			TestUtil.Init();
 			ECS.AddBehavior<BInputExampleMouse>();
 			ECS.AddEntWithCom<BInputExampleMouse>();
-			Assert.AreEqual(1, Input.MouseRefs.Count);
-			Assert.AreEqual(1, Input.Data.Count);
+			Assert.AreEqual(1, Input.State.MouseRefs.Count);
+			Assert.AreEqual(1, Input.State.Data.Count);
 			Input.SendMouse(Output);
-			VecF2 v = ((BInputExampleMouse)ECS.TypeToRef[typeof(BInputExampleMouse)]).Output;
+			VecF2 v = ((BInputExampleMouse)ECS.State.TypeToRef[typeof(BInputExampleMouse)]).Output;
 			Assert.AreEqual(Output[0], v[0]);
 		}
 		[TestMethod]
@@ -34,10 +34,10 @@ namespace RoseworksTest
 			TestUtil.Init();
 			ECS.AddBehavior<BInputExampleMove>();
 			ECS.AddEntWithCom<BInputExampleMove>();
-			Assert.AreEqual(1, Input.MoveRefs.Count);
-			Assert.AreEqual(1, Input.Data.Count);
+			Assert.AreEqual(1, Input.State.MoveRefs.Count);
+			Assert.AreEqual(1, Input.State.Data.Count);
 			Input.SendMove(Output);
-			VecF2 v = ((BInputExampleMove)ECS.TypeToRef[typeof(BInputExampleMove)]).Output;
+			VecF2 v = ((BInputExampleMove)ECS.State.TypeToRef[typeof(BInputExampleMove)]).Output;
 			Assert.AreEqual(Output[0], v[0]);
 		}
 		[TestMethod]
@@ -46,9 +46,9 @@ namespace RoseworksTest
 			TestUtil.Init();
 			ECS.AddBehavior<BInputExampleTrigger>();
 			ECS.AddEntWithCom<BInputExampleTrigger>();
-			Assert.AreEqual(1, Input.TriggerRefs.Count);
-			Assert.AreEqual(1, Input.Data.Count);
-			IInputTrigger com = (IInputTrigger)ECS.TypeToRef[typeof(BInputExampleTrigger)];
+			Assert.AreEqual(1, Input.State.TriggerRefs.Count);
+			Assert.AreEqual(1, Input.State.Data.Count);
+			IInputTrigger com = (IInputTrigger)ECS.State.TypeToRef[typeof(BInputExampleTrigger)];
 			for (int testIx = 0; testIx < StartEndTestCases.Length; testIx++)
 			{
 
@@ -68,7 +68,7 @@ namespace RoseworksTest
 					if (UBit.GetBit(test.slotsToSendFlags, slotIx))
 						Input.SendTrigger(triggerSlot: slotIx, value: UBit.GetBit(test.valueFlags, slotIx) ? 1 : 0);
 				}
-				ref VecI2 realOutput = ref ((BInputExampleTrigger) ECS.TypeToRef[typeof(BInputExampleTrigger)]).Output;
+				ref VecI2 realOutput = ref ((BInputExampleTrigger)ECS.State.TypeToRef[typeof(BInputExampleTrigger)]).Output;
 				int slotsInUse = test.slotFlags & test.slotsToSendFlags;
 				int expectedStart = slotsInUse & test.valueFlags;
 				int expectedEnd = slotsInUse & ~test.valueFlags;
