@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Numerics;
 using RelaStructures;
 using Roseworks;
 
@@ -12,7 +11,7 @@ namespace RoseworksTest
 		public bool ShouldTick { get; set; } = false;
 
 		public StructReArray<SExampleData> Data = new StructReArray<SExampleData>(ushort.MaxValue, ushort.MaxValue, SExampleData.Clear, SExampleData.Move);
-		public VecF2 Output;
+		public Vector2 Output;
 
 		public int InitCom(int comID, int entID)
 		{
@@ -32,7 +31,7 @@ namespace RoseworksTest
 			ref SExampleData data = ref Data.AtId(dataID);
 			return data.A + data.B;
 		}
-		public void MoveInput(int comID, VecF2 moveVec)
+		public void MoveInput(int comID, Vector2 moveVec)
 		{
 			Output = moveVec;
 		}
@@ -47,7 +46,7 @@ namespace RoseworksTest
 			throw new NotImplementedException();
 		}
 
-		public void MoveInput(int comID, VecF3 moveVec)
+		public void MoveInput(int comID, Vector3 moveVec)
 		{
 			throw new NotImplementedException();
 		}

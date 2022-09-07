@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using RelaStructures;
 using Roseworks;
+using System.Numerics;
 
 namespace RoseworksTest
 {
@@ -12,7 +13,7 @@ namespace RoseworksTest
 		public bool ShouldTick { get; set; } = false;
 
 		public StructReArray<SExampleData> Data = new StructReArray<SExampleData>(ushort.MaxValue, ushort.MaxValue, SExampleData.Clear, SExampleData.Move);
-		public VecF2 Output;
+		public Vector2 Output;
 
 		public int InitCom(int comID, int entID)
 		{
@@ -32,7 +33,7 @@ namespace RoseworksTest
 			ref SExampleData data = ref Data.AtId(dataID);
 			return data.A + data.B;
 		}
-		public void MouseInput(int comID, VecF2 mouseVec)
+		public void MouseInput(int comID, Vector2 mouseVec)
 		{
 			Output = mouseVec;
 		}

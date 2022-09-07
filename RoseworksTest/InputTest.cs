@@ -1,7 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Numerics;
 using Roseworks;
 
 namespace RoseworksTest
@@ -10,7 +9,7 @@ namespace RoseworksTest
 	[TestClass]
 	public class InputTest
 	{
-		public VecF2 Output = new VecF2(4, 20);
+		public Vector2 Output = new Vector2(4, 20);
 		public (int slotFlags, int slotsToSendFlags, int valueFlags)[] StartEndTestCases =
 		{
 			(0, 0, 0), (1, 1, 1), (5, 6, 6)
@@ -25,8 +24,8 @@ namespace RoseworksTest
 			Assert.AreEqual(1, Input.State.MouseRefs.Count);
 			Assert.AreEqual(1, Input.State.Data.Count);
 			Input.SendMouse(Output);
-			VecF2 v = ((BInputExampleMouse)ECS.State.TypeToRef[typeof(BInputExampleMouse)]).Output;
-			Assert.AreEqual(Output[0], v[0]);
+			Vector2 v = ((BInputExampleMouse)ECS.State.TypeToRef[typeof(BInputExampleMouse)]).Output;
+			Assert.AreEqual(Output.X, v.X);
 		}
 		[TestMethod]
 		public void TestMove()
@@ -37,11 +36,11 @@ namespace RoseworksTest
 			Assert.AreEqual(1, Input.State.MoveRefs.Count);
 			Assert.AreEqual(1, Input.State.Data.Count);
 			Input.SendMove(Output);
-			VecF2 v = ((BInputExampleMove)ECS.State.TypeToRef[typeof(BInputExampleMove)]).Output;
-			Assert.AreEqual(Output[0], v[0]);
+			Vector2 v = ((BInputExampleMove)ECS.State.TypeToRef[typeof(BInputExampleMove)]).Output;
+			Assert.AreEqual(Output.X, v.X);
 		}
 		[TestMethod]
-		public void TestStartEnd()
+		public void TestTrigger()
 		{
 			TestUtil.Init();
 			ECS.AddBehavior<BInputExampleTrigger>();

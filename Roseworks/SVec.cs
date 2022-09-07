@@ -1,58 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Numerics;
 
 namespace Roseworks
 {
-	public struct VecF2
+	public static class Extensions
 	{
-		public float X, Y;
-		public VecF2(float x, float y)
+		public static ref float At(this ref Vector2 vec, int index)
 		{
-			X = x;
-			Y = y;
+			if (index == 0) return ref vec.X;
+			else if (index == 1) return ref vec.Y;
+			else throw new IndexOutOfRangeException("Vector2 indexer range: 0-1");
 		}
-		public float this[int i]
+		public static ref float At(this ref Vector3 vec, int index)
 		{
-			get
-			{
-				if (i == 0) return X;
-				else if (i == 1) return Y;
-				else throw new IndexOutOfRangeException("VecF2 indexer range: 0-1");
-			}
-			set
-			{
-				if (i == 0) X = value;
-				else if (i == 1) Y = value;
-				else throw new IndexOutOfRangeException("VecF2 indexer range: 0-1");
-			}
-		}
-	}
-	public struct VecF3
-	{
-		public float X, Y, Z;
-		public VecF3(float x, float y, float z)
-		{
-			X = x;
-			Y = y;
-			Z = z;
-		}
-		public float this[int i]
-		{
-			get
-			{
-				if (i == 0) return X;
-				else if (i == 1) return Y;
-				else if (i == 2) return Z;
-				else throw new IndexOutOfRangeException("VecF3 indexer range: 0-2");
-			}
-			set
-			{
-				if (i == 0) X = value;
-				else if (i == 1) Y = value;
-				else if (i == 2) Z = value;
-				else throw new IndexOutOfRangeException("VecF3 indexer range: 0-2");
-			}
+			if (index == 0) return ref vec.X;
+			else if (index == 1) return ref vec.Y;
+			else if (index == 2) return ref vec.Z;
+			else throw new IndexOutOfRangeException("Vector3 indexer range: 0-2");
 		}
 	}
 	public struct VecI2

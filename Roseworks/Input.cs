@@ -1,7 +1,5 @@
 ﻿using System.Diagnostics;
-using System.Collections.Generic;
-using Roseworks;
-
+using System.Numerics;
 
 #pragma warning disable 0414
 namespace Roseworks
@@ -109,7 +107,7 @@ namespace Roseworks
 				}
 			}
 		}
-		public static void SendMove(VecF2 context)
+		public static void SendMove(Vector2 context)
 		{
 			int refIx;
 			int comID;
@@ -123,7 +121,7 @@ namespace Roseworks
 				}
 			}
 		}
-		public static void SendMove(VecF3 context)
+		public static void SendMove(Vector3 context)
 		{
 			int refIx;
 			int comID;
@@ -137,7 +135,7 @@ namespace Roseworks
 				}
 			}
 		}
-		public static void SendMouse(VecF2 context)
+		public static void SendMouse(Vector2 context)
 		{
 			int refIx;
 			int comID;
@@ -180,15 +178,15 @@ namespace Roseworks
 	public interface IInputMove: IInput
 	{
 		void MoveInput(int comID, float moveX);
-		void MoveInput(int comID, VecF2 moveVec);
+		void MoveInput(int comID, Vector2 moveVec);
 		void MoveInput(int comID, float moveX, float moveY);
-		void MoveInput(int comID, VecF3 moveVec);
+		void MoveInput(int comID, Vector3 moveVec);
 		void MoveInput(int comID, float moveX, float moveY, float moveZ);
 
 	}
 	public interface IInputMouse : IInput
 	{
-		void MouseInput(int comID, VecF2 mouseVec);
+		void MouseInput(int comID, Vector2 mouseVec);
 	}
 	public interface IInputTrigger : IInput
 	{
