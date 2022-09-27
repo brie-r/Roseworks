@@ -1,3 +1,3 @@
 # Roseworks
 An engine-agnostic C# entity component system.
-More details coming soon.
+Documentation is a WIP.
