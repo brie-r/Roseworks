@@ -2,6 +2,7 @@
 using System;
 using System.Numerics;
 using Roseworks;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace RoseworksTest
 {
@@ -10,9 +11,16 @@ namespace RoseworksTest
 	public class InputTest
 	{
 		public Vector2 Output = new Vector2(4, 20);
-		public (int slotFlags, int slotsToSendFlags, int valueFlags)[] StartEndTestCases =
+		public (
+			int slotFlags,
+			int slotsToSendFlags,
+			int valueFlags
+		)[] TriggerTestCases =
 		{
-			(0, 0, 0), (1, 1, 1), (5, 6, 6)
+			(0b000, 0b000, 0b000), // start 000 end 000
+			(0b001, 0b001, 0b001), // start 001 end 000
+			(0b101, 0b110, 0b111), // start 100 end 000
+			(0b101, 0b111, 0b110), // start 100 end 001
 		};
 
 		[TestMethod]
@@ -47,36 +55,70 @@ namespace RoseworksTest
 			ECS.AddEntWithCom<BInputExampleTrigger>();
 			Assert.AreEqual(1, Input.State.TriggerRefs.Count);
 			Assert.AreEqual(1, Input.State.Data.Count);
-			IInputTrigger com = (IInputTrigger)ECS.State.TypeToRef[typeof(BInputExampleTrigger)];
-			for (int testIx = 0; testIx < StartEndTestCases.Length; testIx++)
+		}
+		[TestMethod]
+		public void TestTrigger0()
+		{
+			TestTrigger();
+			ref (int slotFlags, int slotsToSendFlags, int valueFlags) test = ref TriggerTestCases[0];
+			for (int slotIx = 0; slotIx < TriggerSlots.Count; slotIx++)
 			{
-
-				ref (int slotFlags, int slotsToSendFlags, int valueFlags) test = ref StartEndTestCases[testIx];
-				com.SlotFlags = test.slotFlags;
-				for (int slotIx = 0; slotIx < TriggerSlots.Count; slotIx++)
-				{
-
-					//
-					// slot 0 incorrectly sent in test 3?
-					// console output looks right but
-					// debug log indicates SendTrigger(0)
-					// is called regardless
-					//
-
-					Console.WriteLine("slots to send flags: " + test.slotsToSendFlags + "\tslot: " + slotIx + "\tbit: " + UBit.GetBit(test.slotsToSendFlags, slotIx));
-					if (UBit.GetBit(test.slotsToSendFlags, slotIx))
-						Input.SendTrigger(triggerSlot: slotIx, value: UBit.GetBit(test.valueFlags, slotIx) ? 1 : 0);
-				}
-				ref VecI2 realOutput = ref ((BInputExampleTrigger)ECS.State.TypeToRef[typeof(BInputExampleTrigger)]).Output;
-				int slotsInUse = test.slotFlags & test.slotsToSendFlags;
-				int expectedStart = slotsInUse & test.valueFlags;
-				int expectedEnd = slotsInUse & ~test.valueFlags;
-				Console.WriteLine("Expected start: " + expectedStart + "\tReal start: " + realOutput[0]);
-				Console.WriteLine("Expected end: " + expectedEnd + "\tReal end: " + realOutput[1]);
-				Assert.AreEqual(expectedStart, realOutput[0]);
-				Assert.AreEqual(expectedEnd, realOutput[1]);
-				realOutput = new VecI2();
+				TestTriggerDebugPerSlot(ref test, slotIx);
+				if (UBit.GetBit(test.slotsToSendFlags, slotIx))
+					Input.SendTrigger(triggerSlot: slotIx, value: test.valueFlags.GetBit(slotIx) ? 1 : 0);
 			}
+		}
+		[TestMethod]
+		public void TestTrigger1()
+		{
+			TestTrigger();
+			ref (int slotFlags, int slotsToSendFlags, int valueFlags) test = ref TriggerTestCases[1];
+			for (int slotIx = 0; slotIx < TriggerSlots.Count; slotIx++)
+			{
+				TestTriggerDebugPerSlot(ref test, slotIx);
+				if (UBit.GetBit(test.slotsToSendFlags, slotIx))
+					Input.SendTrigger(triggerSlot: slotIx, value: test.valueFlags.GetBit(slotIx) ? 1 : 0);
+			}
+		}
+		[TestMethod]
+		public void TestTrigger2()
+		{
+			TestTrigger();
+			ref (int slotFlags, int slotsToSendFlags, int valueFlags) test = ref TriggerTestCases[2];
+			for (int slotIx = 0; slotIx < TriggerSlots.Count; slotIx++)
+			{
+				TestTriggerDebugPerSlot(ref test, slotIx);
+				if (UBit.GetBit(test.slotsToSendFlags, slotIx))
+					Input.SendTrigger(triggerSlot: slotIx, value: test.valueFlags.GetBit(slotIx) ? 1 : 0);
+			}
+		}
+		[TestMethod]
+		public void TestTrigger3()
+		{
+			TestTrigger();
+			ref (int slotFlags, int slotsToSendFlags, int valueFlags) test = ref TriggerTestCases[3];
+			for (int slotIx = 0; slotIx < TriggerSlots.Count; slotIx++)
+			{
+				TestTriggerDebugPerSlot(ref test, slotIx);
+				if (UBit.GetBit(test.slotsToSendFlags, slotIx))
+					Input.SendTrigger(triggerSlot: slotIx, value: test.valueFlags.GetBit(slotIx) ? 1 : 0);
+			}
+		}
+		public void TestTriggerDebugPerSlot(ref (int slotFlags, int slotsToSendFlags, int valueFlags) test, int slotIx)
+		{
+			Console.WriteLine("slots to send flags: " + Convert.ToString(test.slotsToSendFlags, 2).PadLeft(3, '0') + "\tslot: " + slotIx + "\tbit: " + UBit.GetBit(test.slotsToSendFlags, slotIx));
+		}
+		public void TestTriggerDebug(ref (int slotFlags, int slotsToSendFlags, int valueFlags) test)
+		{
+			ref int outputStart = ref ((BInputExampleTrigger)ECS.State.TypeToRef[typeof(BInputExampleTrigger)]).OutputStart;
+			ref int outputEnd = ref ((BInputExampleTrigger)ECS.State.TypeToRef[typeof(BInputExampleTrigger)]).OutputEnd;
+			int slotsInUse = test.slotFlags & test.slotsToSendFlags;
+			int expectedStart = slotsInUse & test.valueFlags;
+			int expectedEnd = slotsInUse & ~test.valueFlags;
+			Console.WriteLine("Expected start: " + Convert.ToString(expectedStart, 2).PadLeft(3, '0') + "\tReal start: " + Convert.ToString(outputStart, 2).PadLeft(3, '0'));
+			Console.WriteLine("Expected end: " + Convert.ToString(expectedEnd, 2).PadLeft(3, '0') + "\tReal end: " + Convert.ToString(outputEnd, 2).PadLeft(3, '0'));
+			Assert.AreEqual(expectedStart, outputStart);
+			Assert.AreEqual(expectedEnd, outputEnd);
 		}
 	}
 }

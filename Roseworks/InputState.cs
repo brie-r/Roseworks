@@ -7,9 +7,8 @@ namespace Roseworks
 	public class InputState
 	{
 		public int[] InputEntIDs;
-		[System.Flags] public enum EInputTypes { None = 0, Trigger = 1 << 0, Move = 1 << 1, Mouse = 1 << 2 }
-		public enum EInputTypesNoFlag { Trigger, Move, Mouse }
-		public int InputTypeCount = System.Enum.GetValues(typeof(EInputTypes)).Length - 1;
+		public enum EInputTypes { Trigger, Move, Mouse }
+		public int InputTypeCount = System.Enum.GetValues(typeof(EInputTypes)).Length;
 
 		public Dictionary<System.Type, int[]> ComTypeToRefsIx = new Dictionary<System.Type, int[]>();
 		public Dictionary<System.Type, int> TypeToInputTypes = new Dictionary<System.Type, int>();

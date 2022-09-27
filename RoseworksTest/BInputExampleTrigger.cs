@@ -13,7 +13,7 @@ namespace RoseworksTest
 		public int SlotFlags { get; set; }
 
 		public StructReArray<SExampleData> Data = new StructReArray<SExampleData>(ushort.MaxValue, ushort.MaxValue, SExampleData.Clear, SExampleData.Move);
-		public VecI2 Output;
+		public int OutputStart, OutputEnd;
 
 		public int InitCom(int comID, int entID)
 		{
@@ -35,11 +35,11 @@ namespace RoseworksTest
 		}
 		public void StartInput(int comID, int slot, float value = 1)
 		{
-			Output[0] |= 1 << slot;
+			OutputStart.SetBit(slot, true);
 		}
 		public void EndInput(int comID, int slot)
 		{
-			Output[1] |= 1 << slot;
+			OutputEnd.SetBit(slot, true);
 		}
 	}
 }

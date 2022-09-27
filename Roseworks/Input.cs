@@ -15,7 +15,6 @@ namespace Roseworks
 			State = new InputState();
 			State.Init();
 		}
-
 		public struct SInput
 		{
 			public int ComID;
@@ -88,7 +87,7 @@ namespace Roseworks
 			{
 				if (State.InputTypes[i].IsAssignableFrom(comType))
 				{
-					data.InputTypeFlags |= 1 << i;
+					data.InputTypeFlags.SetBit(i, true);
 					data.RefIx = State.ComTypeToRefsIx[comType];
 				}
 			}
@@ -99,9 +98,9 @@ namespace Roseworks
 			int comID;
 			for (int i = 0; i < State.Data.Count; i++)
 			{
-				if (UBit.HasFlag(State.Data[i].InputTypeFlags, (int)InputState.EInputTypes.Move))
+				if (State.Data[i].InputTypeFlags.GetBit((int)InputState.EInputTypes.Move))
 				{
-					refIx = State.Data[i].RefIx[(int)InputState.EInputTypesNoFlag.Move];
+					refIx = State.Data[i].RefIx[(int)InputState.EInputTypes.Move];
 					comID = State.Data[i].ComID;
 					State.MoveRefs[refIx].MoveInput(comID, context);
 				}
@@ -113,9 +112,9 @@ namespace Roseworks
 			int comID;
 			for (int i = 0; i < State.Data.Count; i++)
 			{
-				if (UBit.HasFlag(State.Data[i].InputTypeFlags, (int)InputState.EInputTypes.Move))
+				if (State.Data[i].InputTypeFlags.GetBit((int)InputState.EInputTypes.Move))
 				{
-					refIx = State.Data[i].RefIx[(int)InputState.EInputTypesNoFlag.Move];
+					refIx = State.Data[i].RefIx[(int)InputState.EInputTypes.Move];
 					comID = State.Data[i].ComID;
 					State.MoveRefs[refIx].MoveInput(comID, context);
 				}
@@ -127,9 +126,9 @@ namespace Roseworks
 			int comID;
 			for (int i = 0; i < State.Data.Count; i++)
 			{
-				if (UBit.HasFlag(State.Data[i].InputTypeFlags, (int)InputState.EInputTypes.Move))
+				if (State.Data[i].InputTypeFlags.GetBit((int)InputState.EInputTypes.Move))
 				{
-					refIx = State.Data[i].RefIx[(int)InputState.EInputTypesNoFlag.Move];
+					refIx = State.Data[i].RefIx[(int)InputState.EInputTypes.Move];
 					comID = State.Data[i].ComID;
 					State.MoveRefs[refIx].MoveInput(comID, context);
 				}
@@ -141,9 +140,9 @@ namespace Roseworks
 			int comID;
 			for (int i = 0; i < State.Data.Count; i++)
 			{
-				if (UBit.HasFlag(State.Data[i].InputTypeFlags, (int)InputState.EInputTypes.Mouse))
+				if (State.Data[i].InputTypeFlags.GetBit((int)InputState.EInputTypes.Mouse))
 				{
-					refIx = State.Data[i].RefIx[(int)InputState.EInputTypesNoFlag.Mouse];
+					refIx = State.Data[i].RefIx[(int)InputState.EInputTypes.Mouse];
 					comID = State.Data[i].ComID;
 					State.MouseRefs[refIx].MouseInput(comID, context);
 				}
@@ -152,21 +151,25 @@ namespace Roseworks
 		public static void SendTrigger(int triggerSlot, int value)
 		{
 			int refIx;
-			int comID;
+			int comId;
 			for (int i = 0; i < State.Data.Count; i++)
 			{
-				refIx = State.Data[i].RefIx[(int)InputState.EInputTypesNoFlag.Trigger];
-				comID = State.Data[i].ComID;
+				ref SInput data = ref State.Data[i];
+				refIx = data.RefIx[(int)InputState.EInputTypes.Trigger];
+				comId = data.ComID;
+				/*
+				Logger.WriteLine(System.Reflection.MethodBase.GetCurrentMethod().ReflectedType.FullName + "\r\n\ttriggerSlot: " + triggerSlot + "\r\n\tvalue: " + value + "\r\n\tdata index: " + i + "\r\n\trefIx: " + refIx + "\r\n\tcomId: " + comId + "\r\n\tClass implements IInputTrigger? " + data.InputTypeFlags.GetBit((int)InputState.EInputTypes.Trigger) + "\r\n\tClass implementing IInputTrigger accepts slot " + triggerSlot + "? " + State.TriggerRefs[refIx].SlotFlags.GetBit(triggerSlot));
+				*/
 				if (
 					refIx >= 0 &&
-					comID >= 0 &&
-					UBit.HasFlag(State.Data[i].InputTypeFlags, (int)InputState.EInputTypes.Trigger) &&
-					UBit.GetBit(State.TriggerRefs[refIx].SlotFlags, triggerSlot))
+					comId >= 0 &&
+					data.InputTypeFlags.GetBit((int)InputState.EInputTypes.Trigger) &&
+					State.TriggerRefs[refIx].SlotFlags.GetBit(triggerSlot))
 				{
 					if (value != 0)
-						State.TriggerRefs[refIx].StartInput(comID, triggerSlot, value);
+						State.TriggerRefs[refIx].StartInput(comId, triggerSlot, value);
 					else
-						State.TriggerRefs[refIx].EndInput(comID, triggerSlot);
+						State.TriggerRefs[refIx].EndInput(comId, triggerSlot);
 				}
 			}
 		}

@@ -6,13 +6,16 @@ namespace Roseworks
 {
 	public static class UBit
 	{
-		public static bool HasFlag(int a, int b)
+		public static bool GetBit(this int flagInt, int index)
 		{
-			return ((a & b) != 0);
+			return ((flagInt & (1 << index)) != 0);
 		}
-		public static bool GetBit(int a, int i)
+		public static void SetBit(this ref int flagInt, int index, bool value)
 		{
-			return ((a & (1 << i)) != 0);
+			if (value)
+				flagInt |= 1 << index;
+			else
+				flagInt &= ~(1 << index);
 		}
 	}
 }
