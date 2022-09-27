@@ -64,7 +64,7 @@ namespace RoseworksTest
 			for (int slotIx = 0; slotIx < TriggerSlots.Count; slotIx++)
 			{
 				TestTriggerDebugPerSlot(ref test, slotIx);
-				if (UBit.GetBit(test.slotsToSendFlags, slotIx))
+				if (test.slotsToSendFlags.GetBit(slotIx))
 					Input.SendTrigger(triggerSlot: slotIx, value: test.valueFlags.GetBit(slotIx) ? 1 : 0);
 			}
 		}
@@ -76,7 +76,7 @@ namespace RoseworksTest
 			for (int slotIx = 0; slotIx < TriggerSlots.Count; slotIx++)
 			{
 				TestTriggerDebugPerSlot(ref test, slotIx);
-				if (UBit.GetBit(test.slotsToSendFlags, slotIx))
+				if (test.slotsToSendFlags.GetBit(slotIx))
 					Input.SendTrigger(triggerSlot: slotIx, value: test.valueFlags.GetBit(slotIx) ? 1 : 0);
 			}
 		}
@@ -88,7 +88,7 @@ namespace RoseworksTest
 			for (int slotIx = 0; slotIx < TriggerSlots.Count; slotIx++)
 			{
 				TestTriggerDebugPerSlot(ref test, slotIx);
-				if (UBit.GetBit(test.slotsToSendFlags, slotIx))
+				if (test.slotsToSendFlags.GetBit(slotIx))
 					Input.SendTrigger(triggerSlot: slotIx, value: test.valueFlags.GetBit(slotIx) ? 1 : 0);
 			}
 		}
@@ -100,13 +100,13 @@ namespace RoseworksTest
 			for (int slotIx = 0; slotIx < TriggerSlots.Count; slotIx++)
 			{
 				TestTriggerDebugPerSlot(ref test, slotIx);
-				if (UBit.GetBit(test.slotsToSendFlags, slotIx))
+				if (test.slotsToSendFlags.GetBit(slotIx))
 					Input.SendTrigger(triggerSlot: slotIx, value: test.valueFlags.GetBit(slotIx) ? 1 : 0);
 			}
 		}
 		public void TestTriggerDebugPerSlot(ref (int slotFlags, int slotsToSendFlags, int valueFlags) test, int slotIx)
 		{
-			Console.WriteLine("slots to send flags: " + Convert.ToString(test.slotsToSendFlags, 2).PadLeft(3, '0') + "\tslot: " + slotIx + "\tbit: " + UBit.GetBit(test.slotsToSendFlags, slotIx));
+			Console.WriteLine("slots to send flags: " + Convert.ToString(test.slotsToSendFlags, 2).PadLeft(3, '0') + "\tslot: " + slotIx + "\tbit: " + test.slotsToSendFlags.GetBit(slotIx));
 		}
 		public void TestTriggerDebug(ref (int slotFlags, int slotsToSendFlags, int valueFlags) test)
 		{

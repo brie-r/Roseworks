@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Roseworks
 {
-	public static class UBit
+	public static class IntBitExtension
 	{
 		public static bool GetBit(this int flagInt, int index)
 		{
